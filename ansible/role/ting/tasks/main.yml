@@ -1,0 +1,56 @@
+#  tasks:
+    ###############################################
+    ##### Update package manager repositories #####
+    ###############################################
+    - name: Fix Res
+      ansible.builtin.template:
+        src: files/resconf.j2
+        dest: /boot/config.txt
+      notify:
+        - Reboot
+
+    - name: Enable Autologin
+      ansible.builtin.template:
+        src: files/autologin.j2
+        dest: /etc/systemd/system/getty@tty1.service.d/autologin.conf
+      notify:
+        - Reboot
+
+    - name: Update package manager repositories cache
+      apt:
+        update_cache: yes
+      notify:
+        - Reboot
+    ######################################
+    ##### Upgrade installed packages #####
+    ######################################
+    - name: Upgrade installed packages
+      apt:
+        upgrade: dist
+      notify:
+        - Reboot
+
+    - name: Install stuffs
+      apt:
+        name:
+           - xserver-xorg
+           - x11-xserver-utils
+           - xinit
+           - openbox
+           - chromium-browser
+      notify:
+        - Reboot
+
+    - name: Openbox autostart conf
+      ansible.builtin.template:
+        src: files/openbox_autostart.j2
+        dest: /etc/xdg/openbox/autostart
+      notify:
+        - Reboot
+
+    - name: Automatically on boot
+      ansible.builtin.template:
+        src: files/profile_conf.j2
+        dest: .profile
+      notify:
+        - Reboot
