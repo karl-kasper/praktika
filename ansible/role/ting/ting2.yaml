@@ -1,0 +1,7 @@
+-  name: run
+   hosts: pies
+   user: pi
+   become: true
+
+   roles:
+     - role: ting
