@@ -1,0 +1,3 @@
+page: "https://bing.com/"
+hostname: "MASTERSERVER"
+state: "BACKUP"

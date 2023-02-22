@@ -1,0 +1,77 @@
+- hosts: pi2
+  remote_user: pi
+  become: yes
+  tasks:
+    - name: Fix Res
+      ansible.builtin.template:
+        src: files/resconf.j2
+        dest: /boot/config.txt
+      notify:
+        - Reboot
+
+    - name: Enable Autologin
+      ansible.builtin.template:
+        src: files/autologin.j2
+        dest: /etc/systemd/system/getty@tty1.service.d/autologin.conf
+      notify:
+        - Reboot
+
+    - name: Update package manager repositories cache
+      apt:
+        update_cache: yes
+      notify:
+        - Reboot
+
+    - name: Upgrade installed packages
+      apt:
+        upgrade: dist
+      notify:
+        - Reboot
+
+    - name: Install stuffs
+      apt:
+        name:
+           - keepalived
+           - haproxy
+      notify:
+        - Reboot
+
+    - name: ting ting
+      ansible.builtin.template:
+        src: files/VIP.j2
+        dest: /etc/sysctl.d/99-sysctl.conf
+      notify:
+        - Reboot
+
+    - name: Keepalived conf
+      ansible.builtin.template:
+        src: files/keepalive.j2
+        dest: /etc/keepalived/keepalived.conf
+      notify:
+        - Reboot
+
+    - name: Haproxy conf
+      ansible.builtin.template:
+        src: files/haproxy.j2
+        dest: /etc/haproxy/haproxy.cfg
+      notify:
+        - Reboot
+
+    - name: restart multiple services in a loop
+      service:
+        name: "{{ item }}"
+        state: started
+        enabled: true
+      become: true
+      loop:
+        - keepalived
+        - haproxy
+
+  handlers:
+    - name: Reboot
+      reboot:
+        msg: "Reboot initiated by Ansible for kernel updates"
+        connect_timeout: 5
+        reboot_timeout: 300
+        pre_reboot_delay: 0
+        post_reboot_delay: 30
